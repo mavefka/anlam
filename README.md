@@ -1,0 +1,2 @@
+# anlam
+anlami bulmak lazim.
