@@ -1,4 +1,4 @@
-# öyle.
+# öyle. anlam ve arayış.
 
 > *her duygunun bir melodisi, kendine has bir tadı var sanırım. ne hissedeceğimizi biz seçemiyoruz çoğu zaman burada seçtiğimiz gibi, seçmemiz de gerekmiyor. sadece bir hissin vakti geldiyse onu hissedin ve gitsin.*
 
@@ -21,9 +21,8 @@ ekranda yavaşça kayan kelimelerden birine dokunduğunda:
 
 - **kozmik akış:** ekran boyunca farklı hızlarda ve yönlerde sakince süzülen kelimeler.
 - **birazcık bilgi:** her hissin arkasında duran küçük, içten kişisel düşünceler.
-- **müzik:** tarayıcıyı yormayan, %4 seviyesinde usulca çalan döngüsel bir ortam sesi (`assets/ambient.mp3`).
+- **müzik:** tarayıcıyı ve kulağı yormayan, düşük ses seviyesinde usulca çalan döngüsel bir ortam sesi (`assets/ambient.mp3`).
 - **yıldızlar:** arka planda derin nefes alan bir uzay ve imleci takip eden minicik bir ışıltı.
-- **neden? kutusu:** bu sitenin varoluş sebebini fısıldayan küçük bir manifesto.
 
 ---
 
