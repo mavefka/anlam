@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark h-full bg-black select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>öyle.</title>
+  <meta name="description" content="Kozmik boşlukta süzülen duygusal yankılar, içsel sorgulamalar ve müzikal yansımalar.">
+
+  <!-- Google Fonts: Newsreader (Editorial Serif) & Plus Jakarta Sans (Geometric Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Newsreader"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            cosmic: {
+              black: '#000000',
+              deep: '#030305',
+              muted: '#52525b',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Base resets */
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: #000000;
+      color: #e4e4e7;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Ambient Space Background Canvas */
+    #space-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Vignette & Radial Depth */
+    .cosmic-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, transparent 35%, rgba(0, 0, 0, 0.85) 100%);
+      z-index: 2;
+    }
+
+    /* Space Lanes Container: dense, snug, 11 lines filling 100vh */
+    #lanes-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
+      transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+    }
+
+    /* Dim background when modal is open */
+    body.modal-active #lanes-container {
+      filter: blur(6px) brightness(0.3);
+      opacity: 0.55;
+    }
+
+    /* 13 Horizontal Drift Lanes: tightly stacked vertically with minimal gap */
+    .lane {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: calc(100vh / 13);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Subtle Celestial Cursor Glow Follower */
+    #cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 150px;
+      height: 150px;
+      pointer-events: none;
+      z-index: 15;
+      border-radius: 50%;
+      transform: translate3d(-200px, -200px, 0);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 35%, rgba(255, 255, 255, 0.01) 60%, transparent 80%);
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      will-change: transform;
+    }
+
+    .lane-track {
+      display: flex;
+      white-space: nowrap;
+      width: max-content;
+      will-change: transform;
+    }
+
+    /* Seamless Infinite Horizontal Drift Keyframes */
+    @keyframes driftLeft {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
+
+    @keyframes driftRight {
+      0% {
+        transform: translate3d(-50%, 0, 0);
+      }
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .drift-left {
+      animation: driftLeft linear infinite;
+    }
+
+    .drift-right {
+      animation: driftRight linear infinite;
+    }
+
+    /* Word Styling: larger size, very close horizontal spacing (almost touching) */
+    .cosmic-word {
+      font-family: 'Newsreader', serif;
+      font-size: clamp(1.85rem, 2.9vw, 2.8rem);
+      font-weight: 300;
+      letter-spacing: 0.025em;
+      color: #52525b;
+      cursor: pointer;
+      display: inline-block;
+      padding: 0.05rem 0.65rem;
+      margin: 0;
+      line-height: 1.1;
+      transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  text-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* Word Hover: Pure white luminous glow without pausing drift flow */
+    .cosmic-word:hover {
+      color: #ffffff !important;
+      filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.65));
+      text-shadow: 0 0 16px rgba(255, 255, 255, 0.8), 0 0 35px rgba(255, 255, 255, 0.35);
+      transform: scale(1.08) translateY(-1px);
+      z-index: 25;
+    }
+
+    /* Modal Styling */
+    .glass-card {
+      background: rgba(9, 9, 12, 0.88);
+      backdrop-filter: blur(28px) saturate(150%);
+      -webkit-backdrop-filter: blur(28px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.95), 0 0 50px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    /* Spotify Pill Glow */
+    .spotify-pill {
+      box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .spotify-pill:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 28px rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Definition Tooltip */
+    .definition-tooltip {
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, 8px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+      pointer-events: none;
+    }
+
+    .info-trigger:hover .definition-tooltip,
+    .info-trigger:focus-within .definition-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+
+    /* Custom Scrollbar for notes */
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-black">
+
+  <!-- Audio Element for custom user file in assets/ambient.mp3 (with auto-loop) -->
+  <audio id="ambient-audio-file" loop preload="auto">
+    <source src="assets/ambient.mp3" type="audio/mpeg">
+    <source src="assets/ambient.wav" type="audio/wav">
+    <source src="assets/ambient.ogg" type="audio/ogg">
+  </audio>
+
+  <!-- Dynamic Starfield Canvas -->
+  <canvas id="space-canvas"></canvas>
+
+  <!-- Ambient Vignette Layer -->
+  <div class="cosmic-vignette"></div>
+
+  <!-- Subtle Celestial Cursor Glow Follower -->
+  <div id="cursor-glow"></div>
+
+  <!-- Minimalist Corner Control Cluster (Angular Borders) -->
+  <aside class="fixed top-5 right-5 z-40 flex items-center gap-2">
+    <!-- GitHub Profile Link (All the way to the left) -->
+    <a href="https://github.com/mavefka/anlam" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       id="github-btn"
+       class="border border-zinc-800 hover:border-zinc-500 bg-zinc-950/70 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white transition-all shadow-lg flex items-center justify-center hover:bg-zinc-900/80 group"
+       title="GitHub Profilim" aria-label="GitHub Profilim">
+      <svg class="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+      </svg>
+    </a>
+
+    <!-- "neden?" Button (Opens explanation modal) -->
+    <button id="why-btn" 
+            class="text-[11px] font-sans tracking-widest uppercase text-zinc-300 hover:text-white transition-all border border-zinc-800 hover:border-zinc-500 px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 bg-zinc-950/70 backdrop-blur-md shadow-lg hover:bg-zinc-900/80"
+            title="Neden bu siteyi yaptım?" aria-label="Neden bu siteyi yaptım?">
+      <span class="text-zinc-500 text-[10px]">✦</span>
+      <span>neden?</span>
+    </button>
+
+    <!-- Ambient Audio Toggle Button -->
+    <button id="ambient-audio-btn" 
+            class="text-[11px] font-sans tracking-widest uppercase text-zinc-300 hover:text-white transition-all border border-zinc-800 hover:border-zinc-500 px-3.5 py-1.5 rounded-lg flex items-center gap-2 bg-zinc-950/70 backdrop-blur-md shadow-lg hover:bg-zinc-900/80"
+            title="Ortam sesini aç veya kapat" aria-label="Ortam sesini aç veya kapat">
+      <span class="relative flex h-2 w-2">
+        <span id="audio-pulse" class="hidden animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span id="audio-dot" class="relative inline-flex rounded-full h-2 w-2 bg-zinc-500"></span>
+      </span>
+      <span id="ambient-sound-text">Sesi Başlat</span>
+    </button>
+  </aside>
+
+  <!-- Crowded Space Drift Lanes (11 Lines) -->
+  <main id="lanes-container" aria-label="Kozmik Duygu Şeritleri">
+    <!-- Lanes rendered dynamically via JS -->
+  </main>
+
+  <!-- Interactive Word Modal Backdrop & Card -->
+  <div id="modal-backdrop" 
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 ease-out"
+       role="dialog" 
+       aria-modal="true" 
+       aria-labelledby="modal-word-heading">
+       
+    <div id="modal-card" 
+         class="glass-card relative w-full max-w-lg rounded-3xl p-8 sm:p-10 transform scale-95 opacity-0 transition-all duration-300 ease-out text-white">
+      
+      <!-- Close Button (×) -->
+      <button id="modal-close-btn" 
+              class="absolute top-6 right-6 w-9 h-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+              aria-label="Kapat">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Word Heading & Definition Tooltip ("i" Icon) -->
+      <div class="flex items-baseline gap-3 mb-6 relative mt-1">
+        <h2 id="modal-word-heading" 
+            class="font-serif italic font-normal text-4xl sm:text-5xl text-zinc-100 tracking-wide leading-none lowercase">
+          hüzünlü
+        </h2>
+
+        <!-- "i" Info Icon with Tooltip -->
+        <div class="info-trigger relative inline-block self-center">
+          <button type="button" 
+                  id="info-icon-btn"
+                  class="w-5 h-5 rounded-full border border-zinc-600 hover:border-zinc-300 text-zinc-400 hover:text-zinc-100 flex items-center justify-center text-[11px] font-sans font-medium transition-colors cursor-help focus:outline-none"
+                  aria-label="Sözlük anlamını göster">
+            i
+          </button>
+
+          <!-- Tooltip Popup -->
+          <div class="definition-tooltip absolute left-1/2 bottom-full mb-2.5 w-64 p-3.5 rounded-xl bg-zinc-900/95 border border-zinc-700/80 shadow-2xl backdrop-blur-md z-30">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="w-1 h-1 rounded-full bg-zinc-400"></span>
+              <p class="text-[10px] font-sans uppercase tracking-widest text-zinc-400 font-semibold">Sözlük Anlamı</p>
+            </div>
+            <p id="modal-definition-text" class="text-xs font-sans text-zinc-200 leading-relaxed font-normal">
+              Gönle çöken keder, iç burukluğu ve melankoli hali.
+            </p>
+            <!-- Triangle Arrow -->
+            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-900/95"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elegant Divider -->
+      <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent my-6"></div>
+
+      <!-- Personal Reflection / "birazcık bilgi" -->
+      <div class="mb-8">
+        <p class="text-[12px] uppercase tracking-wider text-zinc-400 font-sans font-medium mb-2.5 flex items-center gap-2">
+          <span class="text-zinc-500">✦</span> birazcık bilgi
+        </p>
+        <p id="modal-personal-note" 
+           class="text-zinc-300 font-sans font-light text-base sm:text-lg leading-relaxed custom-scroll max-h-48 overflow-y-auto pr-1">
+          Bu his geçici. Nefes al, duyguyu bastırma ve sadece geçmesine izin ver.
+        </p>
+      </div>
+
+      <!-- Spotify Pill Button -->
+      <div class="pt-1 flex justify-start">
+        <a id="modal-spotify-btn" 
+           href="https://open.spotify.com" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="spotify-pill bg-white text-black hover:bg-zinc-100 px-6 py-3.5 rounded-full inline-flex items-center gap-3 text-sm font-sans font-semibold tracking-wide group">
+          <!-- Official Spotify SVG Icon -->
+          <svg class="w-5 h-5 flex-shrink-0 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <span class="text-zinc-900 group-hover:text-black">Spotify'da Dinle</span>
+          <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- "Neden?" (Why) Modal Backdrop & Card -->
+  <div id="why-modal-backdrop" 
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 ease-out"
+       role="dialog" 
+       aria-modal="true" 
+       aria-labelledby="why-modal-heading">
+       
+    <div id="why-modal-card" 
+         class="glass-card relative w-full max-w-lg rounded-3xl p-8 sm:p-10 transform scale-95 opacity-0 transition-all duration-300 ease-out text-white">
+      
+      <!-- Close Button (×) -->
+      <button id="why-modal-close-btn" 
+              class="absolute top-6 right-6 w-9 h-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+              aria-label="Kapat">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Header Tag -->
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-[10px] tracking-[0.25em] text-zinc-500 uppercase font-sans font-medium">anlam ve sorgu</span>
+        <span class="w-1 h-1 rounded-full bg-zinc-600"></span>
+      </div>
+
+      <!-- Heading -->
+      <h2 id="why-modal-heading" 
+          class="font-serif italic font-normal text-4xl sm:text-5xl text-zinc-100 tracking-wide leading-none mb-6">
+        neden?
+      </h2>
+
+      <!-- Divider -->
+      <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent my-6"></div>
+
+      <!-- Manifesto Content (Easily editable by user) -->
+      <div class="space-y-4 text-zinc-300 font-sans font-light text-base sm:text-lg leading-relaxed custom-scroll max-h-[55vh] overflow-y-auto pr-2">
+        <p>
+          bu siteyi yaptım çünkü ben de bazen bir şeyler hissediyorum, bazen bu şeyler garip, bazen heyecan verici, bazen de korkunç olabiliyor. hissettiğim şeyi tam tanımlayan kelimeyi seçmek ve onu görmek istiyorum çoğu zaman ama kestiremiyor oluyorum. istediğim; duyguyu görmek, neyle yüzleştiğimi görmek.
+        </p>
+        <p>
+          sonra belki de başkaları da böyle hissediyordur, ne hissettiğini kafasında tamamen anlayamıyor ama burada göreceği bir kelimeyle fark edebilir diye düşündüm. aynı benim gibi.
+        </p>
+        <p>
+          her duygunun bir melodisi, kendine has bir tadı var sanırım. ne hissedeceğimizi biz seçemiyoruz çoğu zaman burada seçtiğimiz gibi, seçmemiz de gerekmiyor. sadece bir hissin vakti geldiyse onu hissedin ve gitsin. 
+        </p>
+         <p>
+          - ilgili üçüncü kişi
+        </p>
+      </div>
+
+      <!-- Footer Tagline -->
+      <div class="mt-8 pt-4 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-500 font-sans font-light">
+        <span>öyle.</span>
+        <span class="text-[11px] tracking-wider uppercase text-zinc-600 font-mono">güneş yerinde</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    /**
+     * =========================================================================
+     * DATA ARCHITECTURE
+     * Expanded Turkish Emotional Words
+     * =========================================================================
+     */
+    const wordsData = [
+      // Sad / Melancholic / Bittersweet / Poetic (Expanded)
+      {
+        id: "huzunlu",
+        word: "hüzünlü",
+        definition: "Gönle çöken keder, iç burukluğu ve melankoli hali.",
+        personalNote: "bilmiyorum hiç olmadığı kadar böyle hissediyor olabilirsin ama bir gün yine rahat uyuyacağını ve her şeyin tekrar çok güzel olabileceğini hatırla.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1BLOVHYYlH4JUHQGcpt75R?si=d54574d1e88245b9"
+      },
+      {
+        id: "melankoli",
+        word: "melankoli",
+        definition: "Hafif ve tatlı bir hüzünle karışık derin nostalji ve düşünce hali.",
+        personalNote: "özledim seni harbiden, aklıma da düşüverir aniden.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2unEjH0rGblXt0GLNqG4gz?si=71968ae9c1034e2e"
+      },
+      {
+        id: "hicran",
+        word: "hicran",
+        definition: "Unutulmayan ayrılığın ve derin acının kalpte bıraktığı onulmaz yara.",
+        personalNote: "yaralar saklanacak şeyler değildir, sadece sana hayatın kattığı bazı şeylerden biridir.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/4cHrCNJTdMfbtY0fjc5ged?si=46f1b49483894026"
+      },
+      {
+        id: "kirgin",
+        word: "kırgın",
+        definition: "Beklenmeyen bir davranış veya sözden ötürü incinmiş, sessizleşmiş.",
+        personalNote: "kırılmak çok insani bir duygu, bu kadar.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/52Bg6oaos7twR7IUtEpqcE?si=906c8433400d4197"
+      },
+      {
+        id: "efkar",
+        word: "efkâr",
+        definition: "Düşüncelerin yoğunlaşmasıyla çöken hüzünlü ve derin dalgınlık.",
+        personalNote: "hatalarına bir nilüfer, sevgisizliğine bir kalp verdim.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6Ear9bhjbNi2oaqv5qlqlM?si=b6b80b448d26478a"
+      },
+      {
+        id: "yalnizlik",
+        word: "yalnızlık",
+        definition: "Kimsesiz kalma veya kendi derin iç dünyasıyla baş başa olma durumu.",
+        personalNote: "bir eksiklik değil, sadece doğru yerde ve doğru anlamda olamamak. bir süreliğine.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/4Q9qkdqu0qKKjaftRrAK9C?si=239f007c758043bd"
+      },
+      {
+        id: "kederli",
+        word: "kederli",
+        definition: "Acı ve kayıpla dolu, kalbi ağırlaştıran derin tasa ve üzüntü hali.",
+        personalNote: "ağır gelen şeyleri tek başına taşımak zorunda değilsin.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2y42xAsl6dfMeVXQgOYsUw?si=f0fb7687103b4fba"
+      },
+      {
+        id: "buruk",
+        word: "buruk",
+        definition: "İçinde buruk bir tat bırakan, eksik ve dokunaklı hüzün.",
+        personalNote: "buruşmuş bir kağıt bile o kadar şeye yarar ki.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6iZRqJjpbOVEv4mFTpqg1d?si=f721068963fa4b0b"
+      },
+      {
+        id: "firak",
+        word: "firak",
+        definition: "Ayrılık, sevdiklerinden ayrı düşmenin verdiği derin sızı.",
+        personalNote: "ayrıldıysan, zaten günün birinde yine ayrılacaktın.. değildir buradaki anlam üzülmek.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3j1lvwbdfj3xflDnQazc8n?si=e48f801892bf4a21"
+      },
+      {
+        id: "hasret",
+        word: "hasret",
+        definition: "Özlem duyulan bir kimseye, mekâna veya zamana kavuşma arzusu.",
+        personalNote: "çok özledim. seni.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1Xaj5HO46KrQBX5PMUSR0q?si=e4053bd7ebad4d33"
+      },
+      {
+        id: "caresiz",
+        word: "çaresiz",
+        definition: "Hiçbir çıkar yol bulamama, elinden bir şey gelmeme durumu.",
+        personalNote: "kapanmış birçok kapı var ama evren hava almak zorunda, yeni kapılara ihtiyacımız var. :)",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3Y4rUyw7XBCK6hGHCOt6rp?si=fc8273bbfe36423a"
+      },
+      {
+        id: "gurbet",
+        word: "gurbet",
+        definition: "Doğup büyüdüğün yerden veya ruhunun ait olduğu yuvadan uzakta olma hali.",
+        personalNote: "ait olmadığın yerde yaşamak zor olmalı, alamancı değilsen.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/06zRq31imIPMnl9PbL0UnY?si=f4a7fb9f16454f0f"
+      },
+      {
+        id: "yabanci",
+        word: "yabancı",
+        definition: "Kendi çevresine, zamana veya bazen kendi içine dahi ait hissedememe hali.",
+        personalNote: "ait hissetmemek bir eksiklik değil, çok farklı ve özel olmaktır benim fikrimce.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5DbtYgRjkUIapSm2Ilr81D?si=438aa9e69db4425a"
+      },
+      {
+        id: "matem",
+        word: "matem",
+        definition: "Büyük bir kaybın ardından tutulan derin ve sessiz yas.",
+        personalNote: "mecbur, yaşıyoruz. ne yapalım? yaşanması gereken acıdan mı kaçalım? mantıklı mı?",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7Bxv0WL7UC6WwQpk9TzdMJ?si=feaf828207ff4c7f"
+      },
+      {
+        id: "tutsak",
+        word: "tutsak",
+        definition: "Bir düşünceye, anıya veya kişiye takılı kalıp özgürleşememe hali.",
+        personalNote: "geçmişe takılı kalabilirsin ama kapının anahtarı yine senin kasanda duruyor. hem de şifresi unutulmuş falan değil, hem unutulsa açardık çilingir çağırıp yahu.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1oKC4dau1saBGLn3eC1m2a?si=a7416db87ee24fb2"
+      },
+      {
+        id: "mahzun",
+        word: "mahzun",
+        definition: "Boynu bükük, içine kapanmış, sessizce keder çeken ruh hali.",
+        personalNote: "içine kapandığında kendinle yüzleşiyorsun.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/4RNuCCsvfGF03sfmboHwlT?si=32b0cc2f0ba44706"
+      },
+      {
+        id: "umutsuz",
+        word: "umutsuz",
+        definition: "İçinde umut kalmamış olan, çaresizlik hissi.",
+        personalNote: "siteyi yapan kişi, yani ben. umut. ben umutsuz hissettiğimde ismimi hatırlıyorum ya, sen de bu siteyi yapan kişinin ismini hatırlayabilirsin.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5ZxMTFKTgVl14Qbh0Cb2po?si=d9417821bd3a4f52"
+      },
+      {
+        id: "serzenis",
+        word: "serzeniş",
+        definition: "İncitmeden, kırgınlığı yumuşakça ve sitemle hissettirme.",
+        personalNote: "sessiz sitemlerin yankısı bağırma aptallığından daha fazladır.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7sUBdoD7SqtZGWm4nfB2WD?si=f1c70162752f4362"
+      },
+      {
+        id: "sukutuhayal",
+        word: "sukûtuhayal",
+        definition: "Büyük umutlarla kurulan hayallerin birdenbire yıkılmasıyla gelen hayal kırıklığı.",
+        personalNote: "sen öleceksin ki, biz yaşayalım sukûtuhayal. yeni şeyler.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6n1fnb7y8hZYgcAv7gmxSD?si=10429e5122bd46b6"
+      },
+      {
+        id: "gamli",
+        word: "gamlı",
+        definition: "Gönlü keder ve tasa ile dolup taşmış olan.",
+        personalNote: "keder ve tasayla dolabilirsin bazen de kalbin patlamasın. dikkat.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1FctcqfLUnpEAj9xEukqnc?si=f761601528e6462f"
+      },
+      {
+        id: "tahammul",
+        word: "tahammül",
+        definition: "Ağır yüklere, acılara ve zorluklara direnme gücü, katlanabilme erdemi.",
+        personalNote: "taşıyamam sandığın poşetler sayesinde kolların güçlendi.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3LDkLpuxQlEuEiZmkxpr8S?si=80db445c53b74051"
+      },
+      {
+        id: "kimsesiz",
+        word: "kimsesiz",
+        definition: "Koca dünyada yapayalnız, korunmasız ve sığınaksız hissetme.",
+        personalNote: "kendine sarıl, herkes gitse bile sen varsın.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2TjdnqlpwOjhijHCwHCP2d?si=1eb8e4ed685d4c43"
+      },
+      {
+        id: "tedirgin",
+        word: "tedirgin",
+        definition: "Huzursuz, rahatı kaçmış, her an kötü bir şey olacakmış gibi tetikte hissetme.",
+        personalNote: "korktuğun şeylerin hiçbiri gerçekleşmeyecek, derin nefes al.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2ctvdKmETyOzPb2GiJJT53?si=11d0b374c7094aeb"
+      },
+      {
+        id: "urkek",
+        word: "ürkek",
+        definition: "Çabuk çekinen, güvensizlikten dolayı sakınan ve temkinli duran ruh hali.",
+        personalNote: "çekingenliğini kabul edip kendinle tanışabilmek ürkekliğin en güzel panzehiri falan.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2QhURnm7mQDxBb5jWkbDug?si=8e12ab5c34fa458c"
+      },
+      {
+        id: "kayitsiz",
+        word: "kayıtsız",
+        definition: "Etrafında olan bitene karşı ilgisini yitirmiş, hissizleşmiş ruh durumu.",
+        personalNote: "kayıtsız kalmak bile nelerden korur insanı bilemezsin. sadece gerektiği yerde kalmalısın.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7KHQtpLpoIV3Wfu22YQT8y?si=1ecc07c467f7426c"
+      },
+      {
+        id: "hezeyan",
+        word: "hezeyan",
+        definition: "Gerçekle bağı koparan yoğun duygusal taşkınlık ve kuruntu hali.",
+        personalNote: "aklında kurduğun her senaryo bu kadar korkunç olmak zorunda değil, nefes al ve güzel şeyleri hatırla.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3F1GsNnJ9zNMgCkCnt9kMr?si=e4c2f4a7a54e479e"
+      },
+      {
+        id: "avuntu",
+        word: "avuntu",
+        definition: "Geçici olarak acıyı unutturan, kalbi oyalamaya yarayan küçük teselli.",
+        personalNote: "küçük teselli de kalbin tsunamisini söndürebilir bazen, önemli olan büyük resmi görebilmek.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7IErLZftfRntVlSp3WNIHJ?si=31a89b8ee68b4abb"
+      },
+      {
+        id: "sessizlik",
+        word: "sessizlik",
+        definition: "Bütün kelimelerin bittiği yerde başlayan derin ve dokunaklı suskunluk.",
+        personalNote: "sessizlik çok güzel bir şey ya.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2PIOkZHeBY2DCpcLl8PGZW?si=60ea2d7ded074d6b"
+      },
+      {
+        id: "usuyen",
+        word: "üşüyen",
+        definition: "Sadece teni değil, kalbi ve ruhu da sevgi eksikliğinden üşüyen.",
+        personalNote: "şu an ben de üşüyorum, sorun yok.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/35YyxFpE0ZTOoqFx5bADW8?si=fe1dd28c8930459c"
+      },
+      {
+        id: "yarim",
+        word: "yarım kalmış",
+        definition: "Tamamlanamayan, ortasında kesintiye uğramış arzular ve anılar sızısı.",
+        personalNote: "yarım kaldığı için efsaneleşmiş bir ton hikaye sayarım sana.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0vWzFgVUxaDHHbGhmjYWm7?si=905c81ea022547ce"
+      },
+
+      // Happy / Heartwarming / Hopeful / Luminous
+      {
+        id: "mutlu",
+        word: "mutlu",
+        definition: "Bütün özlemlerin eksiksiz yerine gelmesiyle duyulan sevinç, bahtiyar.",
+        personalNote: "bu anın kıymetini bilmek ve başkalarıyla paylaşabilmek o kadar güzel ki.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/72YCeOZX7NoyRPJGyGbTHs?si=69d380fc94c74ad0"
+      },
+      {
+        id: "sefkat",
+        word: "şefkat",
+        definition: "Karşılıksız esirgeme, sevgi dolu koruma ve derin anlayış duygusu.",
+        personalNote: "kendine şefkat edebilmeli insan, sonra köklerden beslenir diğer örüntüler.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/01RGwdlx5dZRbbQTOeJf0k?si=c66cdae3ac0745c2"
+      },
+      {
+        id: "ferahlik",
+        word: "ferahlık",
+        definition: "İç sıkıntısının dağılmasıyla gelen aydınlık, genişleme ve rahatlama hissi.",
+        personalNote: "vivident sakız gibi bir şey.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6wf7Yu7cxBSPrRlWeSeK0Q?si=b376ff2582a2439f"
+      },
+      {
+        id: "vuslat",
+        word: "vuslat",
+        definition: "Ayrılıktan sonra kavuşma, sevilenle nihayet bir araya gelme anı.",
+        personalNote: "ben ilk kavuştuğumda cidden rüyada olup olmadığım konusunda gelip gidiyordum.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5H43dazn2x2O9dkDVvaiDS?si=2960f6fbcfd94083"
+      },
+      {
+        id: "umut",
+        word: "umut",
+        definition: "Geleceğe dair beslenen sönmeyen inanç, taze bekleyiş.",
+        personalNote: "benim adım umut. bunu yaşadığımda hep ismimi hatırlıyorum.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6FB1DztAAnPJFhRFUOgHME?si=ef627467478b4945"
+      },
+      {
+        id: "sevecen",
+        word: "sevecen",
+        definition: "Herkese sevgiyle, sıcaklıkla ve içtenlikle yaklaşan müşfik hal.",
+        personalNote: "dünyada çok fazla sevecen insan tanıdım. çok fazla sevecen olmayan da.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/26iZgiCSejmjrSBoimJbxu?si=c9ad279f597e4bfe"
+      },
+      {
+        id: "cosku",
+        word: "coşku",
+        definition: "Ruhun taşması, engellenemez sevinç ve yüksek yaşam enerjisi.",
+        personalNote: "yaşadığımı hissediyorum.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2X485T9Z5Ly0xyaghN73ed?si=f309cf8f50be4a5d"
+      },
+      {
+        id: "huzurlu",
+        word: "huzurlu",
+        definition: "Ruhu hiçbir kaygı ve telaşın kirletmediği dingin esenlik.",
+        personalNote: "deniz, birkaç atıştırmalık ve en güzeli de hep yanında olabilecek insanlar. huzur çok güzel bir şey yahu.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2zVT30yiobWfztkIGsROe1?si=a21113ef4ba84b0c"
+      },
+      {
+        id: "bahtiyar",
+        word: "bahtiyar",
+        definition: "Kaderinden memnun, şanslı ve mutluluğa ermiş kişi.",
+        personalNote: "sonsuz mutluluğa ben inanmıyorum. bilmem, her alanda dersek en azından.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/4psU9tmxjc8IJk21xU8S23?si=b4bcc7337acf41df"
+      },
+      {
+        id: "minnet",
+        word: "minnet",
+        definition: "Görülen bir iyilik ve güzellik karşısında duyulan derin teşekkür hissi.",
+        personalNote: "küçük mucizeleri fark etmek ve minnet duymak çok güzel bi' şey.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1NeLwFETswx8Fzxl2AFl91?si=5f92b5d5a9fc4fbc"
+      },
+      {
+        id: "hevesli",
+        word: "hevesli",
+        definition: "Bir şeye karşı duyulan ani, kıpır kıpır ve taze arzu.",
+        personalNote: "hayat hevesle büyür ve yeşillenir.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7iLmGAYotwaaZEAHt6u48V?si=c3a6387053c04c7e"
+      },
+      {
+        id: "ictenlik",
+        word: "içtenlik",
+        definition: "Hesapsız, yapmacıksız ve riyadan uzak samimiyet durumu.",
+        personalNote: "en sevdiğim şey. kendin olmak için o kadar lazım ki, kendin olabileceğin insanların arasındaysan tabii. değilsen de siktir et.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0oHlALeBMPLkgSY9KSsZyP?si=b08896f3afb04790"
+      },
+      {
+        id: "ozgur",
+        word: "özgür",
+        definition: "Her türlü iç ve dış baskıdan kurtulup kendi kanatlarıyla uçma hissi.",
+        personalNote: "insanın sınırlarını kendisine ancak kendisi koyar. kanatlarını aç.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/08aV6QNL1GtSDTplVs4pFf?si=f45fb4e86cdd41bc"
+      },
+      {
+        id: "cesaret",
+        word: "cesaret",
+        definition: "Korkuya ve belirsizliğe rağmen ileri adım atabilme erdemi.",
+        personalNote: "korkuya rağmen yürümek. mesela iş çıkış saati söğütlüçeşme marmaraya yürümek gibi bir şey.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0kTGbHyoL4YwiOOiOPtCAr?si=a3190cd507304f70"
+      },
+      {
+        id: "neseli",
+        word: "neşeli",
+        definition: "Gönlü şen, etrafına sevinç ve canlılık saçan durum.",
+        personalNote: "gülüşün en karanlık odaları bile aydınlatsın.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2uJ2cV5ZlN8TtQWFftA7Mv?si=b861f1782d344308"
+      },
+      {
+        id: "vefali",
+        word: "vefalı",
+        definition: "Dostluğuna, sevgisine ve sözüne zaman geçse de sadık kalan yürek.",
+        personalNote: "fevzipaşa mahallesi, vefa caddesi. bizim vefamız böyleydi.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0InIeZW4P6VO7dUGRM4AKH?si=4be5fef697314c06"
+      },
+      {
+        id: "isiltili",
+        word: "ışıl ışıl",
+        definition: "Gözlerinde yaşama sevinci parıldayan, aydınlık ruh hali.",
+        personalNote: "kendi ışığına güvenmeli insan, saçılıyorsa vardır bir anlamı.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5r5cp9IpziiIsR6b93vcnQ?si=6bf6691d1bd241a5"
+      },
+      {
+        id: "berrak",
+        word: "berrak",
+        definition: "Bulanıklıktan uzak, duru, saf ve tertemiz zihin hali.",
+        personalNote: "berrak bir deniz gibi, turkuaz, saf ve hoş. böyle hissediyorum.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6dGnYIeXmHdcikdzNNDMm2?si=485810f93f5747c0"
+      },
+
+      // Contemplative / Deep / Atmospheric
+      {
+        id: "dingin",
+        word: "dingin",
+        definition: "Durgun, dinlenmiş, sükûnet içinde olan huzurlu ruh hali.",
+        personalNote: "zihninin gürültüsünü susturmalı insan, kendi kafandaki iskelede otur biraz.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0z1o5L7HJx562xZSATcIpY?si=50d3624c7a3240fb"
+      },
+      {
+        id: "sukunet",
+        word: "sükûnet",
+        definition: "Bütün fırtınaların dindiği, dingin ve sessiz iç huzur hali.",
+        personalNote: "dışarıdaki kaos içeri girmek zorunda değil ki, igloda bile hayatta kalınıyor.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1tL5a9jowsWMtn3wkFYsG9?si=731e4b65478d4916"
+      },
+      {
+        id: "tevekkul",
+        word: "tevekkül",
+        definition: "Elinden geleni yaptıktan sonra sonucu kabullenip akışa teslim olma güveni.",
+        personalNote: "kontrol edemediğin şeyleri akışına bırakmayı öğren, elinden geleni yap sadece.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/53YGeh1axUhKgrJIpw8yuS?si=316174ec3cfa4930"
+      },
+      {
+        id: "meftun",
+        word: "meftun",
+        definition: "Birine veya bir ideale gönülden tutulmuş, kendinden geçmiş derecede hayran.",
+        personalNote: "bir şeye hayranlıkla bakabilmek ruhun en güzel lütuflarından birisidir.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3flQv4DNGg31Ic4vBv45Tj?si=382ea2dc1f954392"
+      },
+      {
+        id: "mahrem",
+        word: "mahrem",
+        definition: "Yalnızca sana ve en yakınına ait, gizli ve dokunulmaz iç oda.",
+        personalNote: "her şeyi herkes görmek zorunda değil. öyle olması da sorun değil.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5l7icgnicl7JToRxPkSXyy?si=5217141cc3014649"
+      },
+      {
+        id: "hayret",
+        word: "hayret",
+        definition: "Beklenmedik bir güzellik veya varoluş karşısında duyulan büyülenme.",
+        personalNote: "dünyaya çocuk gözlerinle bakmayı bıraktığında yaşlanırsın ancak.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7bxaFZ1O3cHkgLKMsdC3xR?si=2db3d2fe6cf24be0"
+      },
+      {
+        id: "seffaf",
+        word: "şeffaf",
+        definition: "İçini gizlemeyen, samimi, net ve olduğu gibi görünen ruh.",
+        personalNote: "maskelerden kurtulmak güç ister ama asıl gerçek ve güzel olan şeyler orada başlar gibi geliyor.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7rbECVPkY5UODxoOUVKZnA?si=2034b301c5b34247"
+      },
+      {
+        id: "telas",
+        word: "telaş",
+        definition: "Aceleci, kaygılı ve heyecanla karışık kararsız hareketlilik.",
+        personalNote: "yavaşla, hayat son otobüs saatini yakalamaya çalışmak değil.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2La21GqU4fKTQLcfLxTeoz?si=a39d322f84164c8c"
+      },
+      {
+        id: "anlamsiz",
+        word: "anlamsız",
+        definition: "Hiçbir amacı, önemi veya manası olmayan duygu durumu.",
+        personalNote: "her şey çözülmek ya da bir anlama sahip olmak zorunda değil ki.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2sW8fmnISifQTRgnRrQTYW?si=91a29e7c553c400d"
+      },
+      {
+        id: "farkli",
+        word: "farklı",
+        definition: "Alışılmışın, sıradanın dışında olan özgün durum.",
+        personalNote: "ordinary makes extraordinary.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5ruzrDWcT0vuJIOMW7gMnW?si=cb67c00b233244d9"
+      },
+      {
+        id: "vaveyla",
+        word: "vaveyla",
+        definition: "Çığlık, feryat, ruhun içindeki dilsiz ve derin haykırış.",
+        personalNote: "içteki çığlıklar kafada dindirilmeye çalışılmamalı.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/63OQupATfueTdZMWTxW03A?si=c68109f6061143bf"
+      },
+      {
+        id: "elem",
+        word: "elem",
+        definition: "İç yakan derin ıstırap, kalbe çöken dinmeyen keder.",
+        personalNote: "ruhun derinliğini ölçüyordur o ya, o da geçer. her yeni şey bir şey katar insana.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1mM2u5TRMdUKsIfZKEI6yJ?si=10eb31b303334107"
+      },
+      {
+        id: "narin",
+        word: "narin",
+        definition: "Kırılgan, ince ruhlu, hoyratlıktan sakınılması gereken narin varoluş.",
+        personalNote: "incelik zayıflık değil, boktan dünyanın içerisindeki en nadide şeylerden birisidir benim gözümde.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0SsYlkXxZ5vkWOTsKxMfMz?si=e48adfa1f21945cb"
+      },
+      {
+        id: "efsun",
+        word: "efsun",
+        definition: "Büyüleyici etki, insanı kendinden geçiren gizemli ve derin çekim.",
+        personalNote: "hayatın büyüsü sıradan anlardan çıkar genelde, daha önce de söylediğim gibi ordinary makes extraordinary.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2cGxRwrMyEAp8dEbuZaVv6?si=3db430fe66ed4ac5"
+      },
+      {
+        id: "mechul",
+        word: "meçhul",
+        definition: "Bilinmeyen, gizemli ve karanlıkta kalmış yönler.",
+        personalNote: "asıl keşifler hep bilinmeyen yollar sayesinde yaşanmıştır ha.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6RO3Ojvc35l5QReuatu9zC?si=7913a346dec64fe8"
+      },
+      {
+        id: "haslet",
+        word: "haslet",
+        definition: "İnsanın doğuştan getirdiği güzel huy, erdem ve ahlak cevheri.",
+        personalNote: "özündeki iyiliği üç beş aptal kirletmesin. dünyanın sana ihtiyacı var.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/03La5iGzXDzJLbjGtNmH6l?si=7fb26ccb5faa43a0"
+      },
+      {
+        id: "sukut",
+        word: "sükût",
+        definition: "Derin suskunluk, bütün gürültülerin dindiği kutsal sessizlik.",
+        personalNote: "hiçbir söz sessizliğin hakikatını aşamaz ki bazen.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1F9f5t7GZk7aJZNGZIbfqP?si=7a50e32661ee493d"
+      },
+      {
+        id: "serap",
+        word: "serap",
+        definition: "Uzakta varmış gibi görünen ama yaklaştıkça kaybolan aldatıcı umut.",
+        personalNote: "çöl ve su.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3sNVsP50132BTNlImLx70i?si=eda3efb92b994989"
+      },
+      {
+        id: "firuze",
+        word: "firuze",
+        definition: "Gökyüzü mavisi dinginlik, değerli, saf ve iç açıcı esenlik.",
+        personalNote: "gökyüzü gibi ferah bir ruha hep yıldızlar gibi güzel şeyler gelir.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7b6sWLSnbZhSIeqNGrJ4py?si=8a0aea8f81814af8"
+      },
+      {
+        id: "yangin",
+        word: "yangın",
+        definition: "İçte dinmeyen hasret ve keder ateşi, alev alev yanan duygular.",
+        personalNote: "yanan yerler de küle döner, oradan da yeni filizler çıkar elbet bir gün.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6LgJvl0Xdtc73RJ1mmpotq?si=a6e1e291426d4685"
+      },
+      {
+        id: "lutuf",
+        word: "lütuf",
+        definition: "Karşılıksız gelen güzellik, beklenmedik hediye ve iyilik.",
+        personalNote: "çok güzel bi' lütufa sahibim, sen de düşün vardır illa ki hayatında.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2z4R1Kg1wg889qbEjdW7ON?si=9c3f0e2005dd4598"
+      },
+      {
+        id: "sizi",
+        word: "sızı",
+        definition: "Geçmeyen, hafif ama sürekli derinden hissedilen kalbî ağrı.",
+        personalNote: "geçmeyen sızılar hala yaşadığının bir göstergesi sonuçta. zaman da akıveriyor.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3vkCueOmm7xQDoJ17W1Pm3?si=29e954bd4f5b4c4a"
+      },
+      {
+        id: "bicare",
+        word: "biçare",
+        definition: "Çaresiz, elinden hiçbir şey gelmeyen boynu bükük mahzun hal.",
+        personalNote: "yetersizliği kabul etmek de çok büyük bir yeterlilik kaynağıdır birçok yeni şey için.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/0RdUX4WE0fO30VnlUbDVL6?si=30419d0ef2414195"
+      },
+      {
+        id: "teneffus",
+        word: "teneffüs",
+        definition: "Ruhun ferahlayarak derin ve temiz bir nefes alması.",
+        personalNote: "dur, derin bir nefes al. ve her şey iyi olabilir yeniden.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/2xabqm0YNQCTcPteQjJ22K?si=e3de565ffe8f4e9c"
+      },
+      {
+        id: "vehim",
+        word: "vehim",
+        definition: "Kuruntu, yersiz korku ve zihnin ürettiği karanlık gölgeler.",
+        personalNote: "zihnin ürettiği karanlık gölgeleri aydınlatacak çok güzel güneşten bir kalbin var.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/6jmvJ2cUbImtirxo8U5Qb9?si=1f1d9bace6e147df"
+      },
+      {
+        id: "hulya",
+        word: "hülya",
+        definition: "Tatlı hayal, uyanıkken görülen düş, zihnin şiiri.",
+        personalNote: "dünyayı güzelleştirenler düş kurabilenlerdir.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1gFNm7cXfG1vSMcxPpSxec?si=582f2b0a6c8a4993"
+      },
+      {
+        id: "ihtiras",
+        word: "ihtiras",
+        definition: "Önüne geçilemez tutku, insanı tüketen yakıcı ve fırtınalı arzu.",
+        personalNote: "ateş mesela. insanı ısıtadabilir, öldüredebilir. ölçülü olmak önemli ya, yönetmek.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/62DFvt3IhKq2i8wyigqeFO?si=75ede45db7f64733"
+      },
+      {
+        id: "metanet",
+        word: "metanet",
+        definition: "Zorluklar ve acılar karşısında sarsılmadan ayakta durma gücü.",
+        personalNote: "otobüste bir yeri tutmadan devrilmeyen adam, ya da sadece eylemsizlik yasası biliyor.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/64XdBAi15IDpTSZRFHBVJK?si=cb36709313994164"
+      },
+      {
+        id: "munis",
+        word: "munis",
+        definition: "Cana yakın, sevecen, insana sıcaklık ve huzur veren fıtrat.",
+        personalNote: "kalbe yumuşakça dokunabilmek ruhun içinden uzanan çok özel bir şey.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/7HRG7KDMLBtc6ykQXwfiZm?si=643f2e52099548cf"
+      },
+      {
+        id: "hayalperest",
+        word: "hayalperest",
+        definition: "Gerçeklerin katılığından kaçıp kendi kurduğu göksel dünyada yaşayan.",
+        personalNote: "arada bir yıldızların arasında da yürümek lazım.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1cwth5tNynCfH2ZYCmShDc?si=a9883141eb1649f0"
+      },
+      {
+        id: "mahcubiyet",
+        word: "mahcubiyet",
+        definition: "İçten gelen tatlı çekinme, derin saygı ve incelik duygusu.",
+        personalNote: "bazılarında yok mesela, kyk odalarında kalanlarda hiç yok.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/1LRsc1Wt5GI7y3C1oiwrqW?si=de98ca14c25d4e97"
+      },
+      {
+        id: "virane",
+        word: "virane",
+        definition: "Yıkılmış, harap olmuş ama içinde hâlâ anılar barındıran iç dünya.",
+        personalNote: "harap olmuş yerden çıkaracak birçok şey var seni, sadece daha çok bağır. daha çok iste.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3t0tWO3jsrvHTCl1FsqkZf?si=542655e6d20c486d"
+      },
+      {
+        id: "hezimet",
+        word: "hezimet",
+        definition: "Beklenmedik derin yenilgi ve sonrasında gelen ağır durgunluk.",
+        personalNote: "yenildikçe tecrübelenir ve gelişir insan ya.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3DK6m7It6Pw857FcQftMds?si=e0cacc6f0cf7463f"
+      },
+      {
+        id: "feragat",
+        word: "feragat",
+        definition: "Sevdiği bir şeyden başkası veya daha yüce bir değer uğruna vazgeçme.",
+        personalNote: "birçoğumuzun sahip olmadığı bir eylem.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/5UfYSBxcz6YaiMpoPXMpxL?si=fcf1153c8f054f40"
+      },
+      {
+        id: "sebat",
+        word: "sebat",
+        definition: "Zorluklara rağmen bir yolda inançla yürümeye devam etme kararlılığı.",
+        personalNote: "sabırla atılan küçük adımlar eninde sonunda tepeye çıkartmak zorunda.",
+        spotifyUrl: "https://open.spotify.com/intl-tr/track/3OFaNrwzMTKEfz0eza3iJU?si=40b0382609af4a46"
+      }
+    ];
+
+    /**
+     * =========================================================================
+     * 13 SPACE LANES (Slower, gentle, serene drift speeds: 150s - 250s)
+     * =========================================================================
+     */
+    const TOTAL_LANES = 13;
+    const lanesContainer = document.getElementById('lanes-container');
+
+    const laneConfigs = [
+      { speed: 212, dir: 'drift-left',  offset: 0 },
+      { speed: 208, dir: 'drift-right', offset: 5 },
+      { speed: 216, dir: 'drift-left',  offset: 10 },
+      { speed: 210, dir: 'drift-right', offset: 15 },
+      { speed: 214, dir: 'drift-left',  offset: 20 },
+      { speed: 206, dir: 'drift-right', offset: 25 },
+      { speed: 218, dir: 'drift-left',  offset: 30 },
+      { speed: 212, dir: 'drift-right', offset: 35 },
+      { speed: 215, dir: 'drift-left',  offset: 40 },
+      { speed: 207, dir: 'drift-right', offset: 45 },
+      { speed: 213, dir: 'drift-left',  offset: 50 },
+      { speed: 209, dir: 'drift-right', offset: 55 },
+      { speed: 217, dir: 'drift-left',  offset: 60 },
+    ];
+
+    function createSpaceLanes() {
+      lanesContainer.innerHTML = '';
+      
+      // Ensure Set 1 is at least 3.5x viewport width for zero gaps on any display
+      const minWordsPerSet = Math.max(45, Math.ceil((window.innerWidth * 3.5) / 160));
+
+      for (let i = 0; i < TOTAL_LANES; i++) {
+        const config = laneConfigs[i % laneConfigs.length];
+        const laneEl = document.createElement('div');
+        laneEl.className = 'lane';
+
+        // Uniquely scramble words for this specific lane to completely eliminate vertical duplicates
+        const pool = [...wordsData];
+        for (let s = pool.length - 1; s > 0; s--) {
+          const rand = Math.floor(Math.abs(Math.sin((i + 1) * 7829 + s * 349)) * (s + 1));
+          [pool[s], pool[rand]] = [pool[rand], pool[s]];
+        }
+
+        const setWords = [];
+        let poolIdx = (i * 11) % pool.length;
+        for (let j = 0; j < minWordsPerSet; j++) {
+          setWords.push(pool[poolIdx % pool.length]);
+          poolIdx++;
+        }
+
+        const trackEl = document.createElement('div');
+        trackEl.className = `lane-track ${config.dir}`;
+        trackEl.style.animationDuration = `${config.speed}s`;
+        // Unique negative delay staggers the starting horizontal positions across all lanes
+        trackEl.style.animationDelay = `-${((i * 18.7) % 65).toFixed(1)}s`;
+
+        // Render Set 1 and Set 2 (Identical sets for gapless -50% CSS translation)
+        [0, 1].forEach(() => {
+          setWords.forEach(item => {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'cosmic-word';
+            wordSpan.textContent = item.word;
+            wordSpan.dataset.id = item.id;
+            wordSpan.setAttribute('role', 'button');
+            wordSpan.setAttribute('tabindex', '0');
+            wordSpan.setAttribute('aria-label', `${item.word} duygusu`);
+
+            wordSpan.addEventListener('click', () => openWordModal(item));
+            wordSpan.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openWordModal(item);
+              }
+            });
+
+            trackEl.appendChild(wordSpan);
+          });
+        });
+
+        laneEl.appendChild(trackEl);
+        lanesContainer.appendChild(laneEl);
+      }
+    }
+
+    /**
+     * =========================================================================
+     * INTERACTIVE WORD MODAL LOGIC
+     * =========================================================================
+     */
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const modalCard = document.getElementById('modal-card');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalWordHeading = document.getElementById('modal-word-heading');
+    const modalDefinitionText = document.getElementById('modal-definition-text');
+    const modalPersonalNote = document.getElementById('modal-personal-note');
+    const modalSpotifyBtn = document.getElementById('modal-spotify-btn');
+    let activeModalWord = null;
+
+    function openWordModal(data) {
+      activeModalWord = data;
+      modalWordHeading.textContent = data.word ? data.word.toLowerCase() : '';
+      modalDefinitionText.textContent = data.definition;
+      modalPersonalNote.textContent = data.personalNote;
+      modalSpotifyBtn.href = data.spotifyUrl;
+
+      document.body.classList.add('modal-active');
+      modalBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+      modalBackdrop.classList.add('opacity-100');
+
+      setTimeout(() => {
+        modalCard.classList.remove('scale-95', 'opacity-0');
+        modalCard.classList.add('scale-100', 'opacity-100');
+        modalCloseBtn.focus();
+      }, 20);
+    }
+
+    function closeWordModal() {
+      modalCard.classList.remove('scale-100', 'opacity-100');
+      modalCard.classList.add('scale-95', 'opacity-0');
+
+      modalBackdrop.classList.remove('opacity-100');
+      modalBackdrop.classList.add('opacity-0', 'pointer-events-none');
+      document.body.classList.remove('modal-active');
+      activeModalWord = null;
+    }
+
+    modalCloseBtn.addEventListener('click', closeWordModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeWordModal();
+    });
+
+    /**
+     * =========================================================================
+     * "NEDEN?" (WHY) MANIFESTO MODAL LOGIC
+     * =========================================================================
+     */
+    const whyBtn = document.getElementById('why-btn');
+    const whyModalBackdrop = document.getElementById('why-modal-backdrop');
+    const whyModalCard = document.getElementById('why-modal-card');
+    const whyModalCloseBtn = document.getElementById('why-modal-close-btn');
+    let isWhyModalOpen = false;
+
+    function openWhyModal() {
+      if (activeModalWord) closeWordModal();
+
+      isWhyModalOpen = true;
+      document.body.classList.add('modal-active');
+      whyModalBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+      whyModalBackdrop.classList.add('opacity-100');
+
+      setTimeout(() => {
+        whyModalCard.classList.remove('scale-95', 'opacity-0');
+        whyModalCard.classList.add('scale-100', 'opacity-100');
+        whyModalCloseBtn.focus();
+      }, 20);
+    }
+
+    function closeWhyModal() {
+      whyModalCard.classList.remove('scale-100', 'opacity-100');
+      whyModalCard.classList.add('scale-95', 'opacity-0');
+
+      whyModalBackdrop.classList.remove('opacity-100');
+      whyModalBackdrop.classList.add('opacity-0', 'pointer-events-none');
+      document.body.classList.remove('modal-active');
+      isWhyModalOpen = false;
+    }
+
+    if (whyBtn) {
+      whyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openWhyModal();
+      });
+    }
+
+    if (whyModalCloseBtn) {
+      whyModalCloseBtn.addEventListener('click', closeWhyModal);
+    }
+
+    if (whyModalBackdrop) {
+      whyModalBackdrop.addEventListener('click', (e) => {
+        if (e.target === whyModalBackdrop) closeWhyModal();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (activeModalWord) closeWordModal();
+        if (isWhyModalOpen) closeWhyModal();
+      }
+    });
+
+    /**
+     * =========================================================================
+     * DYNAMIC COSMIC CANVAS
+     * =========================================================================
+     */
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+    let staticStars = [];
+    let ephemeralStars = [];
+    let superBrightStars = [];
+    let shootingStars = [];
+    let nextShootingStarTime = 0;
+
+    function initStars() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const staticCount = Math.floor((canvas.width * canvas.height) / 4500);
+      staticStars = [];
+      for (let i = 0; i < staticCount; i++) {
+        staticStars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.1 + 0.3,
+          alpha: Math.random() * 0.6 + 0.2,
+          twinkleSpeed: (Math.random() * 0.015 + 0.005) * (Math.random() > 0.5 ? 1 : -1)
+        });
+      }
+
+      const ephemeralCount = Math.floor((canvas.width * canvas.height) / 7500);
+      ephemeralStars = [];
+      for (let i = 0; i < ephemeralCount; i++) {
+        ephemeralStars.push(createEphemeralStar());
+      }
+
+      superBrightStars = [];
+      const superBrightCount = 6;
+      for (let i = 0; i < superBrightCount; i++) {
+        superBrightStars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.6 + 1.2,
+          flarePhase: Math.random() * Math.PI * 2,
+          flareSpeed: Math.random() * 0.01 + 0.005
+        });
+      }
+
+      scheduleNextShootingStar();
+    }
+
+    function createEphemeralStar() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.3 + 0.4,
+        alpha: 0,
+        targetAlpha: Math.random() * 0.75 + 0.25,
+        state: 'fadeIn',
+        lifeTimer: Math.random() * 120 + 80,
+        speed: Math.random() * 0.015 + 0.008
+      };
+    }
+
+    function scheduleNextShootingStar() {
+      nextShootingStarTime = Date.now() + (Math.random() * 5000 + 3500);
+    }
+
+    function spawnShootingStar() {
+      const angle = (Math.PI / 4) + (Math.random() * 0.4 - 0.2);
+      const speed = Math.random() * 8 + 10;
+      shootingStars.push({
+        x: Math.random() * (canvas.width * 0.8),
+        y: Math.random() * (canvas.height * 0.4),
+        length: Math.random() * 120 + 80,
+        speedX: Math.cos(angle) * speed,
+        speedY: Math.sin(angle) * speed,
+        alpha: 1,
+        fadeSpeed: Math.random() * 0.018 + 0.014
+      });
+      scheduleNextShootingStar();
+    }
+
+    function renderStarfield() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < staticStars.length; i++) {
+        const s = staticStars[i];
+        s.alpha += s.twinkleSpeed;
+        if (s.alpha > 0.85 || s.alpha < 0.15) {
+          s.twinkleSpeed = -s.twinkleSpeed;
+        }
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.min(1, s.alpha))})`;
+        ctx.fill();
+      }
+
+      for (let i = 0; i < ephemeralStars.length; i++) {
+        const s = ephemeralStars[i];
+        if (s.state === 'fadeIn') {
+          s.alpha += s.speed;
+          if (s.alpha >= s.targetAlpha) {
+            s.alpha = s.targetAlpha;
+            s.state = 'stay';
+          }
+        } else if (s.state === 'stay') {
+          s.lifeTimer--;
+          if (s.lifeTimer <= 0) s.state = 'fadeOut';
+        } else if (s.state === 'fadeOut') {
+          s.alpha -= s.speed;
+          if (s.alpha <= 0) {
+            ephemeralStars[i] = createEphemeralStar();
+            continue;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.min(1, s.alpha))})`;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      for (let i = 0; i < superBrightStars.length; i++) {
+        const s = superBrightStars[i];
+        s.flarePhase += s.flareSpeed;
+        const pulse = (Math.sin(s.flarePhase) + 1) / 2;
+        const brightness = 0.4 + (pulse * 0.6);
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+        ctx.shadowBlur = 12 + (pulse * 14);
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.95)';
+        ctx.fill();
+
+        if (pulse > 0.7) {
+          const spikeLen = (pulse - 0.7) * 22;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(pulse - 0.7) * 2.5})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(s.x - spikeLen, s.y);
+          ctx.lineTo(s.x + spikeLen, s.y);
+          ctx.moveTo(s.x, s.y - spikeLen);
+          ctx.lineTo(s.x, s.y + spikeLen);
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+      }
+
+      if (Date.now() > nextShootingStarTime) {
+        spawnShootingStar();
+      }
+
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const meteor = shootingStars[i];
+        meteor.x += meteor.speedX;
+        meteor.y += meteor.speedY;
+        meteor.alpha -= meteor.fadeSpeed;
+
+        if (meteor.alpha <= 0 || meteor.x > canvas.width + 100 || meteor.y > canvas.height + 100) {
+          shootingStars.splice(i, 1);
+          continue;
+        }
+
+        const tailX = meteor.x - (meteor.speedX / 10) * meteor.length;
+        const tailY = meteor.y - (meteor.speedY / 10) * meteor.length;
+
+        const grad = ctx.createLinearGradient(meteor.x, meteor.y, tailX, tailY);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${meteor.alpha})`);
+        grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(meteor.x, meteor.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(meteor.x, meteor.y, 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${meteor.alpha})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      requestAnimationFrame(renderStarfield);
+    }
+
+    window.addEventListener('resize', () => {
+      initStars();
+      createSpaceLanes();
+    });
+
+    /**
+     * =========================================================================
+     * AUDIO ENGINE:
+     * 1. Plays loopable assets/ambient.mp3 if user uploaded a file.
+     * 2. Otherwise falls back to built-in heartwarming F Major 9th celestial drone.
+     * 3. Fully respects browser autoplay policies with seamless first-interaction unlock.
+     * =========================================================================
+     */
+    const audioFileEl = document.getElementById('ambient-audio-file');
+    const ambientBtn = document.getElementById('ambient-audio-btn');
+    const ambientText = document.getElementById('ambient-sound-text');
+    const audioPulse = document.getElementById('audio-pulse');
+    const audioDot = document.getElementById('audio-dot');
+
+    let isAudioPlaying = false;
+    let fileAudioAvailable = true; // will switch to false if 404/error
+
+    // Synthesizer Web Audio fallback
+    let audioCtx = null;
+    let masterGain = null;
+    let oscillators = [];
+    let filter = null;
+
+    const majorToneFrequencies = [
+      87.31,   // F2 (Warm fundamental base)
+      130.81,  // C3 (Fifth)
+      174.61,  // F3 (Root octave)
+      220.00,  // A3 (Major Third - pure warmth)
+      261.63,  // C4 (Fifth)
+      349.23,  // F4 (Air)
+      392.00   // G4 (Ninth - ethereal heartwarming sheen)
+    ];
+
+    function initSynth() {
+      if (audioCtx) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(420, audioCtx.currentTime);
+        filter.connect(masterGain);
+
+        oscillators = [];
+        majorToneFrequencies.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const oscGain = audioCtx.createGain();
+          const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+
+          osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+          const vol = (idx === 0) ? 0.045 : (0.028 / (idx + 0.6));
+          oscGain.gain.setValueAtTime(vol, audioCtx.currentTime);
+
+          osc.connect(oscGain);
+          if (panner) {
+            const panVal = idx % 3 === 0 ? 0.25 : (idx % 3 === 1 ? -0.25 : 0);
+            panner.pan.setValueAtTime(panVal, audioCtx.currentTime);
+            oscGain.connect(panner);
+            panner.connect(filter);
+          } else {
+            oscGain.connect(filter);
+          }
+
+          osc.start();
+          oscillators.push(osc);
+        });
+      } catch (e) {
+        console.warn('Synth init error:', e);
+      }
+    }
+
+    function playSynth() {
+      initSynth();
+      if (!audioCtx) return;
+
+      const p = audioCtx.state === 'suspended' ? audioCtx.resume() : Promise.resolve();
+      p.then(() => {
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.linearRampToValueAtTime(0.012, audioCtx.currentTime + 2.0);
+        isAudioPlaying = true;
+        updateAudioButtonUI(true);
+      }).catch(() => {
+        isAudioPlaying = false;
+        updateAudioButtonUI(false);
+      });
+    }
+
+    function playSound() {
+      if (fileAudioAvailable && audioFileEl) {
+        audioFileEl.volume = 0.04; // Very gentle 4% ambient volume
+        const playPromise = audioFileEl.play();
+
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            isAudioPlaying = true;
+            updateAudioButtonUI(true);
+          }).catch(err => {
+            // Check if failure is due to missing file (NotSupportedError / 404)
+            if (err.name === 'NotSupportedError' || audioFileEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+              fileAudioAvailable = false;
+              playSynth();
+            } else {
+              // Browser blocked autoplay before gesture
+              isAudioPlaying = false;
+              updateAudioButtonUI(false);
+            }
+          });
+        }
+      } else {
+        playSynth();
+      }
+    }
+
+    function stopSound() {
+      isAudioPlaying = false;
+      updateAudioButtonUI(false);
+
+      if (audioFileEl) {
+        try { audioFileEl.pause(); } catch(_) {}
+      }
+
+      if (audioCtx && masterGain) {
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.0);
+      }
+    }
+
+    function updateAudioButtonUI(playing) {
+      if (playing) {
+        ambientText.textContent = "Sesi Kapat";
+        ambientBtn.title = "Ortam sesini kapat";
+        audioPulse.classList.remove('hidden');
+        audioDot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+      } else {
+        ambientText.textContent = "Sesi Aç";
+        ambientBtn.title = "Ortam sesini aç";
+        audioPulse.classList.add('hidden');
+        audioDot.className = "relative inline-flex rounded-full h-2 w-2 bg-zinc-500";
+      }
+    }
+
+    // Toggle button handler
+    ambientBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isAudioPlaying) {
+        stopSound();
+      } else {
+        playSound();
+      }
+    });
+
+    // Handle audio file error / 404 gracefully
+    audioFileEl.addEventListener('error', () => {
+      fileAudioAvailable = false;
+      if (isAudioPlaying) {
+        playSynth();
+      }
+    });
+
+    // Seamless Unlock on First User Click Anywhere on the Page
+    function onFirstPageInteraction() {
+      if (!isAudioPlaying) {
+        playSound();
+      }
+      window.removeEventListener('pointerdown', onFirstPageInteraction);
+      window.removeEventListener('click', onFirstPageInteraction);
+      window.removeEventListener('keydown', onFirstPageInteraction);
+      window.removeEventListener('touchstart', onFirstPageInteraction);
+    }
+
+    window.addEventListener('pointerdown', onFirstPageInteraction, { passive: true });
+    window.addEventListener('click', onFirstPageInteraction, { passive: true });
+    window.addEventListener('keydown', onFirstPageInteraction, { passive: true });
+    window.addEventListener('touchstart', onFirstPageInteraction, { passive: true });
+
+    /**
+     * =========================================================================
+     * SUBTLE CELESTIAL CURSOR GLOW
+     * Follows right on top of the cursor with delicate starlight glow
+     * =========================================================================
+     */
+    const cursorGlow = document.getElementById('cursor-glow');
+    let glowActive = false;
+
+    window.addEventListener('mousemove', (e) => {
+      if (!glowActive) {
+        cursorGlow.style.opacity = '1';
+        glowActive = true;
+      }
+      cursorGlow.style.transform = `translate3d(${e.clientX - 75}px, ${e.clientY - 75}px, 0)`;
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', () => {
+      cursorGlow.style.opacity = '0';
+      glowActive = false;
+    });
+
+    // Initial Bootstrap
+    window.addEventListener('DOMContentLoaded', () => {
+      createSpaceLanes();
+      initStars();
+      renderStarfield();
+      // Try autoplaying immediately (if browser policy allows)
+      playSound();
+    });
+  </script>
+</body>
+</html>
